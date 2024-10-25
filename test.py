@@ -1,36 +1,46 @@
 from models.base_model import BaseModel
 from db.database import Database
-
+from models.base_field import Text, String, Integer, JSON, UUID, Boolean
 # Step 1: Initialize database
-db = Database(host="localhost", user="root", password="Test1234", database="test_db")
+db = Database(host="localhost", user="yogi", password="Test_1234#", database="test")
 BaseModel.set_db(db)
-class User(BaseModel):
-    name = None
-    email = None
-    def __init__(self,**kwargs):
-        for i in kwargs:
-            # self.i = kwargs[i]
-            self.__setattr__(i, kwargs[i])
-        super().__init__()
-    _fields = {
-        'user_id': 'INT AUTO_INCREMENT PRIMARY KEY',
-        'name': 'VARCHAR(275)',
-        'email': 'VARCHAR(350)',
-    }
 
+class Employee(BaseModel):
+    id = UUID()
+    name = Text(null=False)
+    email = String(unique=True, max_len=80)
+    bio = Text()
+    age = Integer()
+    user_id = Integer(auto_increment=True, primary_key=True)
+    meta = JSON(null=True)
+    test = Boolean()
+    # def __init__(self,**kwargs):
+    #     for i in kwargs:
+    #         # self.i = kwargs[i]
+    #         self.__setattr__(i, kwargs[i])
+    #     super().__init__()
+    # _fields = {
+    #     'user_id': 'INT AUTO_INCREMENT PRIMARY KEY',
+    #     'name': 'VARCHAR(275)',
+    #     'email': 'VARCHAR(350)',
+    # }
+# emp = Employee()
+# emp.name = "test"
+# emp.age = 20
+# print(emp.__dict__, emp.get_properties())
 # Step 2: Create tables
-# User.create_table()
+# Employee.create_table()
 
 # # # Step 3: Insert data
-# user = User(name="John Doe", email="john@example.com")
+# user = Employee(name="John Doe", email="john@example.com")
 # user.save()
-User.alter_table()
+Employee.alter_table()
 # # Step 4: Query data
-# all_users = User.all()
+# all_users = Employee.all()
 # print("All Users:", all_users)
 
 # # Step 5: Update data
-# user_to_update = User.find_by_id(1)
+# user_to_update = Employee.find_by_id(1)
 # if user_to_update:
 #     user_to_update.update(name="Jane Doe")
 

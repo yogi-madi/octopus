@@ -40,7 +40,7 @@ class Database:
         with self.connection.cursor() as cursor:
             try:
                 cursor.execute(query, params)
-                return {row[0]: row[1] for row in cursor.fetchall()} 
+                return cursor.fetchall() 
             except Error as ex:
                 print(f"Error executing query: {ex}")
                 return None
