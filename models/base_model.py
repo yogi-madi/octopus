@@ -18,111 +18,138 @@ class BaseModel:
 
     @classmethod
     def create_table(cls):
-        fields = ', '.join([f"{name} {type_}" for name, type_ in cls._fields.items()])
-        query = f"CREATE TABLE IF NOT EXISTS {cls.__name__.lower()} ({fields})"
-        cls._db.execute(query)
+        db = cls._db  # Assume `_db` is a reference to the database connection
+        table_name = cls.__table__
 
-    @classmethod
-    def alter_table(cls):
-        """Alters the table structure based on the current model's fields."""
-        db = cls._db
-        table_name = cls.__name__.lower()
-        
-        # Step 1: Get existing fields using DESCRIBE command
-        existing_fields_query = f"DESCRIBE {table_name};"
-        existing_fields = db.execute_query(existing_fields_query)
-        
-        # Convert existing fields to a dictionary
-        existing_fields_dict = {}
-        primary_key_exists = False
-        existing_primary_key_field = None
-        unique_keys = set()  # To track existing unique keys
+        # Use get_properties to retrieve model fields and their configurations
+        fields = cls.get_properties()
 
-        for row in existing_fields:
-            field_name, field_type, nullability, key_info, default_value, extra_info = row
-            field_type = field_type.upper()
-            extra_info = extra_info.upper() if isinstance(extra_info, str) else extra_info
-            # Track if a primary key or unique key is already defined
-            if key_info == "PRI":
-                primary_key_exists = True
-                existing_primary_key_field = field_name
-            if key_info == "UNI":
-                unique_keys.add(field_name)
+        # Build the CREATE TABLE statement
+        field_definitions = []
 
-            # Build constraints for the existing field
+        for field_name, field in fields.items():
+            field_type = field.field_type
             constraints = []
-            if key_info == "PRI":
-                constraints.append("PRIMARY KEY")
-            if nullability == "NO":
-                constraints.append("NOT NULL")
-            if key_info == "UNI":
-                constraints.append("UNIQUE")
-            
-            # Combine type and constraints
-            existing_definition = f"{field_type} {' '.join(constraints)}"
-            if default_value:
-                existing_definition += f" DEFAULT {default_value}"
-            if extra_info:
-                existing_definition += f" {extra_info}"
-            
-            existing_fields_dict[field_name] = existing_definition.strip()
 
-        # Step 2: Fetch existing unique constraint names from information_schema
-        unique_constraints_query = f"""
-        SELECT CONSTRAINT_NAME
-        FROM information_schema.KEY_COLUMN_USAGE
-        WHERE TABLE_SCHEMA = '{db.database}' AND TABLE_NAME = '{table_name}' AND CONSTRAINT_NAME <> 'PRIMARY';
-        """
-        existing_unique_constraints = db.execute_query(unique_constraints_query)
-        unique_keys = {constraint_name for (constraint_name,) in existing_unique_constraints}
-
-        # Prepare fields defined in the model
-        model_fields = cls.get_properties()
-        model_fields_dict = {}
-        keys_to_drop = []
-        drop_commands = []
-        for name, field in model_fields.items():
-            constraints = []
+            # Collect constraints
             if field.primary_key:
-                if primary_key_exists and name != existing_primary_key_field:
-                    keys_to_drop.append(f"DROP PRIMARY KEY")
-                if not primary_key_exists:  # Add primary key if not exists
-                    constraints.append("PRIMARY KEY")
-                primary_key_exists = True  # Prevent additional primary keys
+                constraints.append("PRIMARY KEY")
             if not field.null:
                 constraints.append("NOT NULL")
             if field.unique:
                 constraints.append("UNIQUE")
+            if getattr(field, 'auto_increment', False):
+                constraints.append("AUTO_INCREMENT")
 
-            field_definition = field.create_db_format()
-            model_fields_dict[name] = field_definition.strip()
+            # Combine field type and constraints
+            constraints_clause = " ".join(constraints).strip()
+            field_definition = f"{field_name} {field_type} {constraints_clause}".strip()
+            field_definitions.append(field_definition)
 
-        # Step 3: Determine which fields to drop
-        fields_to_drop = set(existing_fields_dict.keys()) - set(model_fields_dict.keys())
 
-        # Step 4: Prepare ALTER TABLE commands
+        # Combine field definitions to form the final SQL statement
+        create_table_statement = f"CREATE TABLE IF NOT EXISTS {table_name} (\n    "
+        create_table_statement += ",\n    ".join(field_definitions)
+        create_table_statement += "\n);"
+
+        # Execute the SQL statement to create the table
+        try:
+            db.execute(create_table_statement)
+            cls.log_changes(create_table_statement)
+            print(f"Table '{table_name}' created successfully.")
+        except Exception as ex:
+            print(f"Error creating table '{table_name}': {ex}")
+
+
+    @classmethod
+    def alter_table(cls):
+        db = cls._db
+        table_name = cls.__table__
+        
+        # Step 1: Retrieve existing schema information for fields and constraints
+        existing_fields_query = f"DESCRIBE {table_name};"
+        existing_fields = db.execute_query(existing_fields_query)
+        
+        existing_fields_dict = {}
+        unique_constraints = set()
+        primary_key_field = None
+
+        for row in existing_fields:
+            field_name, field_type, nullability, key_info, default_value, extra_info = row
+            existing_constraints = {
+                'type': field_type.upper(),
+                'null': nullability == "YES",
+                'primary_key': key_info == "PRI",
+                'unique': key_info == "UNI",
+                'default': default_value,
+                'extra': extra_info.upper() if extra_info else ''
+            }
+            
+            if key_info == "PRI":
+                primary_key_field = field_name
+            if key_info == "UNI":
+                unique_constraints.add(field_name)
+
+            existing_fields_dict[field_name] = existing_constraints
+
+        # Step 2: Prepare new field definitions from the model
+        model_fields = cls.get_properties()
+        new_fields_dict = {}
+        for name, field in model_fields.items():
+            new_constraints = {
+                'type': field.field_type,
+                'null': field.null,
+                'primary_key': field.primary_key,
+                'unique': field.unique,
+                'default': getattr(field, 'default', None),
+                'extra': 'AUTO_INCREMENT' if getattr(field, 'auto_increment', False) else ''
+            }
+            new_fields_dict[name] = new_constraints
+
+        # Step 3: Compare existing and new field definitions to generate ALTER commands
         add_commands = []
         modify_commands = []
-
-        # Drop columns that are not in the model
-        for field in fields_to_drop:
-            drop_commands.append(f"DROP COLUMN {field}")
-
-        # Handle unique keys that are not defined in the model
-        for existing_unique in unique_keys:
-            if existing_unique not in model_fields_dict:
-                keys_to_drop.append(f"DROP INDEX {existing_unique}")
-
-        for column, new_definition in model_fields_dict.items():
-            if column in existing_fields_dict:
-                if existing_fields_dict[column] != new_definition:
-                    modify_commands.append(f"MODIFY {column} {new_definition}")
+        drop_commands = []
+        index_commands = []
+        
+        # Identify fields to drop or modify based on model definitions
+        for field_name, existing in existing_fields_dict.items():
+            if field_name not in new_fields_dict:
+                drop_commands.append(f"DROP COLUMN {field_name}")
             else:
-                add_commands.append(f"ADD {column} {new_definition}")
+                new = new_fields_dict[field_name]
+                if existing != new:
+                    modify_commands.append(f"MODIFY {field_name} {new['type']}")
 
-        alter_commands = drop_commands + modify_commands + add_commands + keys_to_drop
+                    # Apply additional constraint changes if needed
+                    if new['primary_key'] and not existing['primary_key']:
+                        index_commands.append(f"ADD PRIMARY KEY ({field_name})")
+                    elif existing['primary_key'] and not new['primary_key']:
+                        index_commands.append("DROP PRIMARY KEY")
+                    
+                    if new['unique'] and field_name not in unique_constraints:
+                        index_commands.append(f"ADD UNIQUE INDEX {field_name} ({field_name})")
+                    elif field_name in unique_constraints and not new['unique']:
+                        index_commands.append(f"DROP INDEX {field_name}")
 
-        # Step 5: Execute the ALTER TABLE command if there are changes
+        # Identify new fields to add
+        for field_name, new in new_fields_dict.items():
+            if field_name not in existing_fields_dict:
+                add_definition = f"{new['type']}"
+                if new['primary_key']:
+                    add_definition += " PRIMARY KEY"
+                if new['unique']:
+                    add_definition += " UNIQUE"
+                if not new['null']:
+                    add_definition += " NOT NULL"
+                if new['default'] is not None:
+                    add_definition += f" DEFAULT {new['default']}"
+                if new['extra']:
+                    add_definition += f" {new['extra']}"
+                add_commands.append(f"ADD COLUMN {field_name} {add_definition}")
+
+        # Step 4: Execute ALTER TABLE commands if needed
+        alter_commands = add_commands + modify_commands + drop_commands + index_commands
         if alter_commands:
             alter_statement = f"ALTER TABLE {table_name} " + ", ".join(alter_commands)
             try:

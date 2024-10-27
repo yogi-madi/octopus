@@ -6,15 +6,17 @@ db = Database(host="localhost", user="yogi", password="Test_1234#", database="te
 BaseModel.set_db(db)
 
 class Employee(BaseModel):
-    id = UUID(primary_key=True)
+    __table__ = 'test_new'
+    id = UUID(max_len=16)
+    test_id = Integer(primary_key=True)
     name = Text(null=False)
-    email = String(unique=False, max_len=80)
+    email = String(unique=False, max_len=75)
     bio = Text()
     # age = Integer()
     # user_id = Integer(auto_increment=True, primary_key=True)
     meta = JSON(null=True)
     test = Boolean()
-    gender = String(possible_values=["Male","Female","Other"])
+    gender = String(possible_values=["Male","Female"])
     # def __init__(self,**kwargs):
     #     for i in kwargs:
     #         # self.i = kwargs[i]

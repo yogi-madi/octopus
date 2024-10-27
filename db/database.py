@@ -30,8 +30,7 @@ class Database:
                 return cursor
             except Error as ex:
                 self.connection.rollback()
-                print(f"Error executing query: {ex}")
-                return None
+                raise ex
             
     def execute_query(self, query, params=()):
         if self.connection is None:
@@ -44,7 +43,7 @@ class Database:
                 return cursor.fetchall() 
             except Error as ex:
                 print(f"Error executing query: {ex}")
-                return None
+                raise ex
 
     def close(self):
         if self.connection and self.connection.is_connected():
