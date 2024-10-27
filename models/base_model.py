@@ -55,7 +55,6 @@ class BaseModel:
         # Execute the SQL statement to create the table
         try:
             db.execute(create_table_statement)
-            cls.log_changes(create_table_statement)
             print(f"Table '{table_name}' created successfully.")
         except Exception as ex:
             print(f"Error creating table '{table_name}': {ex}")
