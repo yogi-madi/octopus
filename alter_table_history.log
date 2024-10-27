@@ -52,3 +52,51 @@ MODIFY user_id INT NOT NULL
 [2024-10-26 01:31:15] ALTER TABLE Command: ALTER TABLE employee MODIFY meta JSON, MODIFY test BOOLEAN NOT NULL
   Modified Columns: MODIFY meta JSON, MODIFY test BOOLEAN NOT NULL
 
+[2024-10-26 13:13:22] ALTER TABLE Command: ALTER TABLE employee DROP COLUMN bio, DROP COLUMN user_id, DROP COLUMN age, MODIFY id CHAR(36) PRIMARY KEY NOT NULL, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, DROP PRIMARY KEY
+  Dropped Columns: DROP COLUMN bio, DROP COLUMN user_id, DROP COLUMN age
+  Modified Columns: MODIFY id CHAR(36) PRIMARY KEY NOT NULL, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL
+
+[2024-10-26 13:17:20] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, ADD gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL
+  Added Columns: ADD gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:21:39] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:22:45] ALTER TABLE Command: ALTER TABLE employee MODIFY name TEXT, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY name TEXT, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:23:08] ALTER TABLE Command: ALTER TABLE employee MODIFY name TEXT NOT NULL, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY name TEXT NOT NULL, MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:26:49] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:42:08] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:42:10] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:45:19] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL, DROP INDEX email_3 ON employee, DROP INDEX email_4 ON employee, DROP INDEX email_2 ON employee
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:48:09] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL, DROP INDEX email_4, DROP INDEX email_3, DROP INDEX email_2
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:50:29] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:52:17] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:52:59] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-26 13:55:36] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+
+[2024-10-27 17:05:34] ALTER TABLE Command: ALTER TABLE employee MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL, ADD bio TEXT NOT NULL
+  Modified Columns: MODIFY email VARCHAR(80) NOT NULL, MODIFY test BOOLEAN NOT NULL, MODIFY gender ENUM('Male', 'Female', 'Other') NOT NULL
+  Added Columns: ADD bio TEXT NOT NULL
+

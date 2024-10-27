@@ -41,7 +41,7 @@ class BaseModel:
         for row in existing_fields:
             field_name, field_type, nullability, key_info, default_value, extra_info = row
             field_type = field_type.upper()
-            extra_info = extra_info.upper() if type(extra_info) == str else extra_info
+            extra_info = extra_info.upper() if isinstance(extra_info, str) else extra_info
             # Track if a primary key or unique key is already defined
             if key_info == "PRI":
                 primary_key_exists = True
@@ -67,7 +67,16 @@ class BaseModel:
             
             existing_fields_dict[field_name] = existing_definition.strip()
 
-        # Step 2: Prepare fields defined in the model
+        # Step 2: Fetch existing unique constraint names from information_schema
+        unique_constraints_query = f"""
+        SELECT CONSTRAINT_NAME
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA = '{db.database}' AND TABLE_NAME = '{table_name}' AND CONSTRAINT_NAME <> 'PRIMARY';
+        """
+        existing_unique_constraints = db.execute_query(unique_constraints_query)
+        unique_keys = {constraint_name for (constraint_name,) in existing_unique_constraints}
+
+        # Prepare fields defined in the model
         model_fields = cls.get_properties()
         model_fields_dict = {}
         keys_to_drop = []
@@ -102,7 +111,7 @@ class BaseModel:
         # Handle unique keys that are not defined in the model
         for existing_unique in unique_keys:
             if existing_unique not in model_fields_dict:
-                keys_to_drop.append(f"DROP INDEX {existing_unique} ON {table_name}")
+                keys_to_drop.append(f"DROP INDEX {existing_unique}")
 
         for column, new_definition in model_fields_dict.items():
             if column in existing_fields_dict:
@@ -117,7 +126,6 @@ class BaseModel:
         if alter_commands:
             alter_statement = f"ALTER TABLE {table_name} " + ", ".join(alter_commands)
             try:
-                pdb.set_trace()
                 db.execute(alter_statement)
                 cls.log_changes(alter_statement, drop_commands, modify_commands, add_commands)
                 print(f"Altered table '{table_name}' successfully.")

@@ -11,6 +11,7 @@ class Database:
                 database=database
             )
             if self.connection.is_connected():
+                self.database = database
                 print("Successfully connected to the database.")
         except Error as e:
             print(f"Error: {e}")
